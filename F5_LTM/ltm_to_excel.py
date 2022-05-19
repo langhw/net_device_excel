@@ -99,7 +99,6 @@ pat_ltm_virtual_profiles = re.compile(r' profiles { Common/(.*?) { context clien
 pat_ltm_virtual_index = re.compile(r' vs-index (\d+) ') #匹配ltm virtual index
 #
 # ## 逐行分析关键词，并导入字典：
-nnn = 0
 for line in file.readlines():
 	#健康检查信息收集：
 	if wkey[1] in line:
@@ -176,7 +175,6 @@ for line in file.readlines():
 		# print(ltm_snatpool[ltm_snatpool_name[0]])
 	# ltm_virtual 信息收集：
 	elif wkey[4] in line:
-		nnn += 1
 		# ltm virtual 名称
 		ltm_virtual_name = pat_ltm_virtual_name.findall(line)
 		ltm_virtual[ltm_virtual_name[0]] = []
