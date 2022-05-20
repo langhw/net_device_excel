@@ -88,7 +88,7 @@ pat_ltm_snatpool_partition = re.compile(r' partition (\w+) ') #匹配ltm snatpoo
 #定义ltm_virtual匹配参数
 pat_ltm_virtual_name = re.compile(r'ltm virtual (.*?) {') #匹配ltm virtual 名称
 pat_ltm_virtual_addressstatus = re.compile(r' address-status (\w+) ') #匹配ltm virtual address-status
-pat_ltm_virtual_ip = re.compile(r' destination \w+/(\d+\.\d+\.\d+\.\d+)%\d+:(.*?) (\w+) ') #匹配ltm virtual 地址，端口和启用状态。
+pat_ltm_virtual_ip = re.compile(r' destination \w+/(\d+\.\d+\.\d+\.\d+)%{0, 1}\d*:(.*?) (\w+) ') #匹配ltm virtual 地址，端口和启用状态。
 pat_ltm_virtual_partition = re.compile(r' partition (\w+) ') #匹配ltm virtual partition
 pat_ltm_virtual_cookie = re.compile(r' persist { \w+/GDCS_cookie_(\w+) ') #匹配ltm virtual cookie时间
 pat_ltm_virtual_pool = re.compile(r' pool (.*?) ') #匹配ltm virtual pool
