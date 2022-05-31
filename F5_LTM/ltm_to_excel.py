@@ -34,11 +34,15 @@ ltm_pool = {}
 ltm_snatpool = {}
 ltm_virtual = {}
 ltm = {}
-column = ['VS类型', '申请人', 'F5区域名称', 'VS名称', '应用类型*', '域名', 'VS服务地址', 'VS服务端口*', 'POOL名称', \
-		  'member地址(需负载的服务器)', 'Pool_member地址状态', 'member端口', '负载均衡算法*', '会话保持类型*', '会话保持时间*', \
-		  '长连接与长连接时间*', '长连接时间', '是否需要透传源地址*', 'SNAT名称', 'SNAT地址分配', '并发数评估', '健康检查名称', \
-		  '探测类型*', '检查条件*', '成功返回值*', '探测包发送间隔*', '探测包重传次数*', '最大响应时间*', '其他特殊需求', 'vs启用', \
-		  'vs状态', 'Vs_index']
+column = ['F5区域名称', 'VS名称', 'VS服务地址', 'VS服务端口*', 'POOL名称', 'member地址(需负载的服务器)', 'Pool_member地址状态', \
+		  'member端口', '负载均衡算法*', '会话保持时间*', 'http头插入源', 'SNAT名称', 'SNAT地址分配', '健康检查名称', '探测类型*', \
+		  '检查条件*', '成功返回值*', '探测包发送间隔*', '最大响应时间*', 'vs启用', 'vs状态', 'Vs_index', '创建时间', '修改时间', \
+		  '至节点添加ssl证书', '对外添加ssl证书']
+# column = ['VS类型', '申请人', 'F5区域名称', 'VS名称', '应用类型*', '域名', 'VS服务地址', 'VS服务端口*', 'POOL名称', \
+# 		  'member地址(需负载的服务器)', 'Pool_member地址状态', 'member端口', '负载均衡算法*', '会话保持类型*', '会话保持时间*', \
+# 		  '长连接与长连接时间*', '长连接时间', '是否需要透传源地址*', 'SNAT名称', 'SNAT地址分配', '并发数评估', '健康检查名称', \
+# 		  '探测类型*', '检查条件*', '成功返回值*', '探测包发送间隔*', '探测包重传次数*', '最大响应时间*', '其他特殊需求', 'vs启用', \
+# 		  'vs状态', 'Vs_index']
 #
 for col in column:
 	ltm[col] = []
@@ -56,16 +60,16 @@ if '.xlsx' not in log_file:
 encod = linshi = ''
 with open(log_file, 'rb') as f:
 	encod = chardet.detect(f.read(200000))['encoding']
+# file = open(log_file, 'r', encoding=encod)
 file = open(log_file, 'r', encoding=encod)
-while wkey[0] not in linshi:
-	linshi = file.readline()
-else:
-	linshi = file.tell()
-file.seek(linshi - 100)
+# while wkey[0] not in linshi:
+# 	linshi = file.readline()
+# else:
+# 	linshi = file.tell()
+# file.seek(linshi - 100)
 #
 #定义ltm_monitor匹配参数
 pat_ltm_monitor_name = re.compile(r'ltm monitor (\w+) (.*?) {') #匹配ltm monitor 的名称和类型
-# pat_ltm_monitor_name = re.compile(r'ltm monitor (\w+) \w+/(.*?) {') #匹配ltm monitor 的名称和类型
 pat_ltm_monitor_interval = re.compile(r' interval (\d+) ') #匹配ltm monitor 的间隔时间
 pat_ltm_monitor_partition = re.compile(r' partition (\w+) ') #匹配ltm monitor 的partition
 pat_ltm_monitor_recv = re.compile(r' recv (\w*) ') #匹配ltm monitor 的recv
@@ -73,30 +77,30 @@ pat_ltm_monitor_send = re.compile(r'send "GET (.*?) .*" ',re.S) #匹配ltm monit
 pat_ltm_monitor_timeout = re.compile(r' timeout (\d*) ') #匹配ltm monitor timeout
 #定义ltm_pool匹配参数
 pat_ltm_pool_name = re.compile(r'ltm pool (.*?) {') #匹配ltm pool 名称
-# pat_ltm_pool_name = re.compile(r'ltm pool \w+/(.*?) {') #匹配ltm pool 名称
 pat_ltm_pool_loadbalancingmode = re.compile(r' load-balancing-mode (.*?) ') #匹配ltm pool 负载模式
 pat_ltm_pool_ip = re.compile(r' \w+/(\d+\.\d+\.\d+\.\d+):(.*?) { address ') #匹配ltm pool ip 和 端口 多个
 pat_ltm_pool_ip_state = re.compile(r' state (.*?) fqdn ') #匹配ltm pool state
 pat_ltm_pool_monitor = re.compile(r' monitor (\w+/.*?) partition') #匹配ltm pool monitor
-# pat_ltm_pool_monitor = re.compile(r'monitor \w*/(.*?) ') #匹配ltm pool monitor
 pat_ltm_pool_partition = re.compile(r' partition (\w*) ') #匹配ltm pool partition
 #定义ltm_snatpool匹配参数
 pat_ltm_snatpool_name = re.compile(r'ltm snatpool (.*?) {') #匹配ltm snatpool 名称
-# pat_ltm_snatpool_name = re.compile(r'ltm snatpool \w+/(.*?) {') #匹配ltm snatpool 名称
 pat_ltm_snatpool_ip = re.compile(r'members { \w+/(\d+\.\d+\.\d+\.\d+) }') #匹配ltm snatpool ip
 pat_ltm_snatpool_partition = re.compile(r' partition (\w+) ') #匹配ltm snatpool partition
 #定义ltm_virtual匹配参数
 pat_ltm_virtual_name = re.compile(r'ltm virtual (.*?) {') #匹配ltm virtual 名称
 pat_ltm_virtual_addressstatus = re.compile(r' address-status (\w+) ') #匹配ltm virtual address-status
-pat_ltm_virtual_ip = re.compile(r' destination \w+/(\d+\.\d+\.\d+\.\d+)%{0, 1}\d*:(.*?) (\w+) ') #匹配ltm virtual 地址，端口和启用状态。
+pat_ltm_virtual_ip = re.compile(r' destination \w*/(\d+\.\d+\.\d+\.\d+).*?:(.*?) (\w*?) ') #匹配ltm virtual 地址，端口和启用状态。
 pat_ltm_virtual_partition = re.compile(r' partition (\w+) ') #匹配ltm virtual partition
-pat_ltm_virtual_cookie = re.compile(r' persist { \w+/GDCS_cookie_(\w+) ') #匹配ltm virtual cookie时间
+pat_ltm_virtual_cookie = re.compile(r' persist { \w+/.*?ookie_(.*?) ') #匹配ltm virtual cookie时间
 pat_ltm_virtual_pool = re.compile(r' pool (.*?) ') #匹配ltm virtual pool
-# pat_ltm_virtual_pool = re.compile(r' pool \w+/(.*?) ') #匹配ltm virtual pool
 pat_ltm_virtual_sat = re.compile(r'source-address-translation { pool (.*?) ') #匹配ltm virtual source-address-translation
-# pat_ltm_virtual_sat = re.compile(r'source-address-translation { pool \w+/(.*?) ') #匹配ltm virtual source-address-translation
-pat_ltm_virtual_profiles = re.compile(r' profiles { Common/(.*?) { context clientside } Common/(.*?) { context serverside } Common/(.*?) { context all } ') #匹配ltm virtual profiles
+# pat_ltm_virtual_profiles = re.compile(r' profiles { Common/(.*?) { context clientside } Common/(.*?) { context serverside } Common/(.*?) { context all } ') #匹配ltm virtual profiles
 pat_ltm_virtual_index = re.compile(r' vs-index (\d+) ') #匹配ltm virtual index
+pat_ltm_virtual_creation = re.compile(r'creation-time (\d+-\d+-\d+:\d+:\d+:\d+) ') #匹配ltm virtual creation-time
+pat_ltm_virtual_modified = re.compile(r'last-modified-time (\d+-\d+-\d+:\d+:\d+:\d+) ') #匹配ltm virtual last-modified-time
+pat_ltm_virtual_XFF = re.compile(r' \w+/(http-XFF) ') #匹配ltm virtual http-XFF
+pat_ltm_virtual_serverside = re.compile(r' .*/(.*?) { context serverside } ') #匹配ltm virtual serverside
+pat_ltm_virtual_clientside = re.compile(r' .*/(.*?) { context clientside } ') #匹配ltm virtual clientside
 #
 # ## 逐行分析关键词，并导入字典：
 for line in file.readlines():
@@ -114,7 +118,10 @@ for line in file.readlines():
 		ltm_monitor[ltm_monitor_name[0][1]].append(ltm_monitor_partition[0])
 		#ltm monitor 的recv
 		ltm_monitor_recv = pat_ltm_monitor_recv.findall(line)
-		ltm_monitor[ltm_monitor_name[0][1]].append(ltm_monitor_recv[0])
+		if len(ltm_monitor_recv) == 0:
+			ltm_monitor[ltm_monitor_name[0][1]].append('none')
+		else:
+			ltm_monitor[ltm_monitor_name[0][1]].append(ltm_monitor_recv[0])
 		#ltm monitor 的send
 		ltm_monitor_send = pat_ltm_monitor_send.findall(line)
 		if len(ltm_monitor_send) == 0:
@@ -178,27 +185,32 @@ for line in file.readlines():
 		# ltm virtual 名称
 		ltm_virtual_name = pat_ltm_virtual_name.findall(line)
 		ltm_virtual[ltm_virtual_name[0]] = []
-		# ltm virtual address-status
+		# ltm virtual address-status 0
 		ltm_virtual_addressstatus = pat_ltm_virtual_addressstatus.findall(line)
 		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_addressstatus[0])
-		# ltm virtual 地址，端口和启用状态。
+		# ltm virtual 地址，端口和启用状态。 1 2 3
 		ltm_virtual_ip = pat_ltm_virtual_ip.findall(line)
-		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_ip[0][0])
-		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_ip[0][1])
-		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_ip[0][2])
-		# 匹配ltm virtual partition
+		if len(ltm_virtual_ip) == 0:
+			ltm_virtual[ltm_virtual_name[0]].append('none')
+			ltm_virtual[ltm_virtual_name[0]].append('none')
+			ltm_virtual[ltm_virtual_name[0]].append('none')
+		else:
+			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_ip[0][0])
+			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_ip[0][1])
+			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_ip[0][2])
+		# 匹配ltm virtual partition 4
 		ltm_virtual_partition = pat_ltm_virtual_partition.findall(line)
 		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_partition[0])
-		# 匹配ltm virtual cookie时间
+		# 匹配ltm virtual cookie时间 5
 		ltm_virtual_cookie = pat_ltm_virtual_cookie.findall(line)
 		if len(ltm_virtual_cookie) == 0:
 			ltm_virtual[ltm_virtual_name[0]].append('none')
 		else:
 			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_cookie[0])
-		# 匹配ltm virtual pool
+		# 匹配ltm virtual pool 6
 		ltm_virtual_pool = pat_ltm_virtual_pool.findall(line)
 		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_pool[0])
-		# 匹配ltm virtual source-address-translation
+		# 匹配ltm virtual source-address-translation 7
 		ltm_virtual_sat = pat_ltm_virtual_sat.findall(line)
 		if len(ltm_virtual_sat) == 0:
 			ltm_virtual[ltm_virtual_name[0]].append('none')
@@ -207,11 +219,35 @@ for line in file.readlines():
 		# # 匹配ltm virtual profiles
 		# ltm_virtual_profiles = pat_ltm_virtual_profiles.findall(line)
 		# ltm_virtual[pat_ltm_virtual_name[0]].append(ltm_virtual_profiles[0])
-		# 匹配ltm virtual index
+		# 匹配ltm virtual index 8
 		ltm_virtual_index = pat_ltm_virtual_index.findall(line)
 		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_index[0])
 		# print(ltm_virtual[ltm_virtual_name[0]])
-#
+		# 匹配ltm virtual creation-time 9
+		ltm_virtual_creation = pat_ltm_virtual_creation.findall(line)
+		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_creation[0])
+		# 匹配ltm virtual last-modified-time 10
+		ltm_virtual_modified = pat_ltm_virtual_modified.findall(line)
+		ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_modified[0])
+		# 匹配ltm virtual http-XFF 11
+		ltm_virtual_XFF = pat_ltm_virtual_XFF.findall(line)
+		if len(ltm_virtual_XFF) == 0:
+			ltm_virtual[ltm_virtual_name[0]].append('none')
+		else:
+			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_XFF[0])
+		# 匹配ltm virtual serverside 12
+		ltm_virtual_serverside = pat_ltm_virtual_serverside.findall(line)
+		if len(ltm_virtual_serverside) == 0:
+			ltm_virtual[ltm_virtual_name[0]].append('none')
+		else:
+			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_serverside[0])
+		# 匹配ltm virtual clientside 13
+		ltm_virtual_clientside = pat_ltm_virtual_clientside.findall(line)
+		if len(ltm_virtual_clientside) == 0:
+			ltm_virtual[ltm_virtual_name[0]].append('none')
+		else:
+			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_clientside[0])
+	#
 # print(len(ltm_virtual))
 # print(len(ltm_monitor))
 # print(len(ltm_pool))
@@ -225,17 +261,21 @@ for vs in ltm_virtual.keys():
 	ltm['VS服务端口*'].append(ltm_virtual[vs][2])
 	ltm['POOL名称'].append(ltm_virtual[vs][6].split('/')[-1])
 	ltm['会话保持时间*'].append(ltm_virtual[vs][5])
-	ltm['SNAT名称'].append(ltm_virtual[vs][-2].split('/')[-1])
+	ltm['SNAT名称'].append(ltm_virtual[vs][7].split('/')[-1])
 	ltm['vs启用'].append(ltm_virtual[vs][3])
 	ltm['vs状态'].append(ltm_virtual[vs][0])
-	ltm['Vs_index'].append(ltm_virtual[vs][-1])
+	ltm['Vs_index'].append(ltm_virtual[vs][8])
+	ltm['创建时间'].append(ltm_virtual[vs][9])
+	ltm['修改时间'].append(ltm_virtual[vs][10])
+	ltm['http头插入源'].append(ltm_virtual[vs][11])
+	ltm['至节点添加ssl证书'].append(ltm_virtual[vs][12])
+	ltm['对外添加ssl证书'].append(ltm_virtual[vs][13])
 	if ltm_virtual[vs][6] == 'none':
 		ltm['member地址(需负载的服务器)'].append('none')
 		ltm['Pool_member地址状态'].append('none')
 		ltm['member端口'].append('none')
 		ltm['负载均衡算法*'].append('none')
 		ltm['健康检查名称'].append('none')
-		#
 		ltm['探测类型*'].append('none')
 		ltm['检查条件*'].append('none')
 		ltm['成功返回值*'].append('none')
@@ -246,24 +286,41 @@ for vs in ltm_virtual.keys():
 		ltm['Pool_member地址状态'].append(ltm_pool[ltm_virtual[vs][6]][3])
 		ltm['member端口'].append(ltm_pool[ltm_virtual[vs][6]][2])
 		ltm['负载均衡算法*'].append(ltm_pool[ltm_virtual[vs][6]][0])
-		ltm['健康检查名称'].append(ltm_pool[ltm_virtual[vs][6]][4])
 		if ltm_pool[ltm_virtual[vs][6]][4] == 'none':
+			ltm['健康检查名称'].append(ltm_pool[ltm_virtual[vs][6]][4])
 			ltm['探测类型*'].append('none')
 			ltm['检查条件*'].append('none')
 			ltm['成功返回值*'].append('none')
 			ltm['探测包发送间隔*'].append('none')
 			ltm['最大响应时间*'].append('none')
+		elif 'and' in ltm_pool[ltm_virtual[vs][6]][4]:
+			duo_monitor = ltm_pool[ltm_virtual[vs][6]][4].split(' and ')
+			mon_n = mon_d = mon_j = mon_r = mon_s = mon_t = ''
+			for d_monitor in duo_monitor:
+				mon_n = mon_n + chr(10) + d_monitor.split('/')[-1]
+				mon_d = mon_d + chr(10) + ltm_monitor[d_monitor][0]
+				mon_j = mon_j + chr(10) + ltm_monitor[d_monitor][4]
+				mon_r = mon_r + chr(10) + ltm_monitor[d_monitor][3]
+				mon_s = mon_s + chr(10) + ltm_monitor[d_monitor][1]
+				mon_t = mon_t + chr(10) + ltm_monitor[d_monitor][5]
+			ltm['健康检查名称'].append(mon_n)
+			ltm['探测类型*'].append(mon_d)
+			ltm['检查条件*'].append(mon_j)
+			ltm['成功返回值*'].append(mon_r)
+			ltm['探测包发送间隔*'].append(mon_s)
+			ltm['最大响应时间*'].append(mon_t)
 		else:
+			ltm['健康检查名称'].append(ltm_pool[ltm_virtual[vs][6]][4].split('/')[-1])
 			ltm['探测类型*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][0])
 			ltm['检查条件*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][4])
 			ltm['成功返回值*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][3])
 			ltm['探测包发送间隔*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][1])
 			ltm['最大响应时间*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][5])
 	#
-	if ltm_virtual[vs][-2] == 'none':
+	if ltm_virtual[vs][7] == 'none':
 		ltm['SNAT地址分配'].append('none')
 	else:
-		ltm['SNAT地址分配'].append(ltm_snatpool[ltm_virtual[vs][-2]][0])
+		ltm['SNAT地址分配'].append(ltm_snatpool[ltm_virtual[vs][7]][0])
 #
 # 写入表格：
 data = df.from_dict(ltm, orient='index').T
