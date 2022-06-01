@@ -248,6 +248,7 @@ for line in file.readlines():
 		else:
 			ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_clientside[0])
 	#
+file.close()
 # print(len(ltm_virtual))
 # print(len(ltm_monitor))
 # print(len(ltm_pool))
