@@ -27,11 +27,13 @@ rule_sheet = {}
 object = {}
 object_service ={}
 for line in file.readlines():
-	if 'object-group ip address' in line:
+	# if 'object-group ip address' in line:
+	if 'object-group ip address' in line or 'object-group ipv6 address' in line:
 		line = line.strip('\n')
-		line = line.split('object-group ip address ')
+		line = line.split('address ')
 		my1 = line[-1]
 		object[my1] = 'none'
+		print(my1)
 	elif 'network host address' in line or 'network subnet' in line:
 		line = line.strip('\n')
 		if 'host' in line:

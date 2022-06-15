@@ -18,7 +18,7 @@ class FwRule_to_Excle(object):
 		"""初始参数"""
 		self.column = ['ID', 'Source-Zone', 'Destination-Zone', 'Service_name', 'Service', 'S_ip_name', 'S_ip', 'D_ip_name',
 				  'D_ip', 'Description', 'Action']
-		self.dir = 'LOG'
+		self.dir = r'C:\Users\lianghongwei-hzgs\Desktop\LOG'
 	def get_dir(self):
 		for log_file in os.listdir(self.dir):
 			yield log_file
@@ -38,7 +38,7 @@ class FwRule_to_Excle(object):
 	def pp_data(self):
 		"""匹配关键信息到字典中"""
 		# 匹配对象
-		pat_oser = re.compile(r'object-group ip address (.*?)\n')
+		pat_oser = re.compile(r'object-group service (.*) (description .*)?\n \d+ service (\w+) destination (\w+) (\d+)\n*')
 		pat_oip = re.compile(r'')
 		pat_oipv6 = re.compile(r'')
 		# 匹配rule：
@@ -64,8 +64,10 @@ class FwRule_to_Excle(object):
 		for log_file in FwRule_to_Excle().get_info():
 			for line in log_file:
 				# 匹配对象
+				print(line)
 				oser = pat_oser.findall('line')
-				ob_dit[oser[0]] = oser[1]
+				print(oser)
+				# ob_dit[oser[0]] = oser[1]
 				oip = pat_oip.findall('line')
 				ob_dit
 				oipv6 = pat_oipv6.findall('line')
@@ -90,10 +92,10 @@ class FwRule_to_Excle(object):
 		pass
 	def write_excel(self, writer, out_file):
 		"""主程序，将信息写入表格保持"""
-		data = df.from_dict(FwRule_to_Excle.pp_data(),orient='index',columns=self.column)
+		data = df.from_dict(FwRule_to_Excle.pp_data(), orient='index', columns=self.column)
 		data.reset_index(inplace=True)
 		data.index = data.index + 1
-		data.rename(columns={'index':'Rule_name'},inplace=True)
+		data.rename(columns={'index': 'Rule_name'}, inplace=True)
 		column1 = ['Rule_name'] + self.column
 		sf = StyleFrame(data)
 		sf.apply_column_style(cols_to_style=self.column,
@@ -111,5 +113,6 @@ class FwRule_to_Excle(object):
 		writer.close()
 
 if __name__=='__main__':
-	for i in FwRule_to_Excle().get_info():
-		print(i[0])
+	# for i in FwRule_to_Excle().get_info():
+	# 	print(i[0])
+	FwRule_to_Excle().pp_data()
