@@ -17,7 +17,7 @@ class FwRule_to_Excle(object):
 	def __init__(self):
 		"""初始参数"""
 		self.column = ['ID', 'Source-Zone', 'Destination-Zone', 'S_ip_name', 'S_ip', 'D_ip_name', 'D_ip', 'Service_name', 'Protocol', 'Port', 'Description', 'Action']
-		self.dir = r'LOG'
+		self.dir = r'C:\Users\lianghongwei-hzgs\Desktop\LOG'
 	def get_dir(self):
 		for log_file in os.listdir(self.dir):
 			yield log_file
@@ -56,7 +56,7 @@ class FwRule_to_Excle(object):
 		for file in self.get_info():
 			file_name = file[0]
 			ob_a_t = {'any': 'any'}    # 对象地址字典
-			ob_s_t = {'any': 'any'}    # 对象服务字典
+			ob_s_t = {'any': ['any', 'any']}    # 对象服务字典
 			rule_t = {}    # 安全策略字典
 			# for i in self.column:
 			# 	rule_t[i] = []
@@ -146,13 +146,15 @@ class FwRule_to_Excle(object):
 						while n4 < len(rule_di):
 							if n4 == 0:
 								rule_di_m = [rule_di[n4], ob_a_t[rule_di[n4]]]
+								print(rule_di_m)
 							else:
 								rule_di_m[0] = rule_di_m[0] + chr(10) + ob_a_t[rule_di[n4]]
 								rule_di_m[1] = rule_di_m[1] + chr(10) + ob_a_t[rule_di[n4]]
+								print(rule_di_m)
 							n4 += 1
 						while n5 < len(rule_s):
 							if rule_s[n5] not in ob_s_t:
-								ob_s_t[rule_s[n5]] = ['Predefined', rule_s[n5]]
+								ob_s_t[rule_s[n5]] = ['Predefined', 'name']
 							if n5 == 0:
 								rule_s_m = [rule_s[n5], ob_s_t[rule_s[n5]][0], ob_s_t[rule_s[n5]][1]]
 							else:
@@ -177,6 +179,7 @@ class FwRule_to_Excle(object):
 			yield file_name, rule_t
 	def write_excel(self, out_file):
 		"""主程序，将信息写入表格保持"""
+		writer = StyleFrame.ExcelWriter(out_file)
 		for pp in self.pp_data():
 			data = df.from_dict(pp[1], orient='index', columns=self.column)
 			data.reset_index(inplace=True)
@@ -187,7 +190,6 @@ class FwRule_to_Excle(object):
 			sf.apply_column_style(cols_to_style=self.column,
 			                      styler_obj=Styler(horizontal_alignment='left'),
 			                      style_header=False)
-			writer = StyleFrame.ExcelWriter(out_file)
 			sf.to_excel(
 				excel_writer=writer,
 				sheet_name=pp[0],
@@ -196,7 +198,9 @@ class FwRule_to_Excle(object):
 				row_to_add_filters=0,
 			)
 			writer.save()
-			writer.close()
+		writer.close()
 
 if __name__ == '__main__':
-	FwRule_to_Excle().write_excel('fwrules.xlsx')
+	# FwRule_to_Excle().write_excel('fwrules.xlsx')
+	for i in FwRule_to_Excle().pp_data():
+		pass
