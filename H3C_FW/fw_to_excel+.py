@@ -12,12 +12,11 @@ import chardet
 import os
 from pandas import DataFrame as df
 from styleframe import StyleFrame, Styler
-
 class FwRule_to_Excle(object):
 	def __init__(self):
 		"""初始参数"""
 		self.column = ['ID', 'Source-Zone', 'Destination-Zone', 'S_ip_name', 'S_ip', 'D_ip_name', 'D_ip', 'Service_name', 'Protocol', 'Port', 'Description', 'Action']
-		self.dir = r'C:\Users\lianghongwei-hzgs\Desktop\LOG'
+		self.dir = r'LOG'
 	def get_dir(self):
 		for log_file in os.listdir(self.dir):
 			yield log_file
@@ -38,7 +37,7 @@ class FwRule_to_Excle(object):
 		"""匹配关键信息到字典中"""
 		# 定义匹配地址对象
 		pd_object_a_n = re.compile(r'object-group (?:ip|ipv6) address (.*)')
-		pd_object_a = re.compile(r'(?: \d+ network (?:host address|subnet|host name) (.*))+')
+		pd_object_a = re.compile(r'(?: \d+ network (?:host address|subnet|host name|range) (.*))+')
 		# 定义匹配服务对象
 		pd_object_s_n = re.compile(r'object-group service (.*)')
 		# pd_object_s = re.compile(r'(?: \d+ service (\w+) destination (\w+) (\d+))+')
@@ -58,14 +57,12 @@ class FwRule_to_Excle(object):
 			ob_a_t = {'any': 'any'}    # 对象地址字典
 			ob_s_t = {'any': ['any', 'any']}    # 对象服务字典
 			rule_t = {}    # 安全策略字典
-			# for i in self.column:
-			# 	rule_t[i] = []
 			for line in file[1]:
 				if 'object-group ip address' in line or 'object-group ipv6 address' in line:
 					ob_a_n = pd_object_a_n.findall(line)[0]    # 找到地址对象的名称
 					ob_a = pd_object_a.findall(line)    # 找到地址对象的地址信息
 					n = 0
-					if len(ob_a):
+					if len(ob_a) != 0:
 						while n < len(ob_a):
 							if n == 0:
 								ob_a_t[ob_a_n] = ob_a[n]
@@ -79,7 +76,7 @@ class FwRule_to_Excle(object):
 					ob_s = pd_object_s.findall(line)    # 找到服务对象的服务信息，包括协议类型，协议指定，协议端口号
 					ob_s_t[ob_s_n] = []    # 服务对象为列表，0是协议，1是端口
 					n = 0
-					if len(ob_s):
+					if len(ob_s) != 0:
 						while n < len(ob_s):
 							if n == 0:
 								ob_s_t[ob_s_n].append(ob_s[n][0])
@@ -146,21 +143,20 @@ class FwRule_to_Excle(object):
 						while n4 < len(rule_di):
 							if n4 == 0:
 								rule_di_m = [rule_di[n4], ob_a_t[rule_di[n4]]]
-								print(rule_di_m)
+
 							else:
-								rule_di_m[0] = rule_di_m[0] + chr(10) + ob_a_t[rule_di[n4]]
+								rule_di_m[0] = rule_di_m[0] + chr(10) + rule_di[n4]
 								rule_di_m[1] = rule_di_m[1] + chr(10) + ob_a_t[rule_di[n4]]
-								print(rule_di_m)
 							n4 += 1
 						while n5 < len(rule_s):
 							if rule_s[n5] not in ob_s_t:
-								ob_s_t[rule_s[n5]] = ['Predefined', 'name']
+								ob_s_t[rule_s[n5]] = ['Predefined', rule_s[n5]]
 							if n5 == 0:
 								rule_s_m = [rule_s[n5], ob_s_t[rule_s[n5]][0], ob_s_t[rule_s[n5]][1]]
 							else:
 								rule_s_m[0] = rule_s_m[0] + chr(10) + rule_s[n5]
 								rule_s_m[1] = rule_s_m[1] + chr(10) + ob_s_t[rule_s[n5]][0]
-								rule_s_m[2] = rule_s_m[1] + chr(10) + ob_s_t[rule_s[n5]][1]
+								rule_s_m[2] = rule_s_m[2] + chr(10) + ob_s_t[rule_s[n5]][1]
 							n5 += 1
 						#
 						rule_t[rule_name] = []
@@ -201,6 +197,6 @@ class FwRule_to_Excle(object):
 		writer.close()
 
 if __name__ == '__main__':
-	# FwRule_to_Excle().write_excel('fwrules.xlsx')
-	for i in FwRule_to_Excle().pp_data():
-		pass
+	FwRule_to_Excle().write_excel('fwrules.xlsx')
+	# for i in FwRule_to_Excle().pp_data():
+	# 	break

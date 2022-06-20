@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/6/13 14:29
 # @Author  : lianghongwei
-# @File    : fw_to_excel+.py
+# @File    :
 # @Description :
 '''
 	本脚本能够通过 "screen-length disable  和 display ip routing-table 和 display security-zone" 日志实现H3C防火墙网络的安全区域表格化。
