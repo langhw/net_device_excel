@@ -168,7 +168,7 @@ class XunJian(object):
 							# print(output)
 							data_bk = {'state': 1, 'result': output_bk, 'path': os.path.join(dirpath, 'bk.conf')}
 							self.write_to_file(**data_bk)
-							data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, cmd + '.conf')}
+							data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, 'pz.conf')}
 							self.write_to_file(**data)
 						else:
 							# output += conn.send_command(cmd, strip_command=False, strip_prompt=False)
@@ -177,7 +177,7 @@ class XunJian(object):
 							# print(output)
 							data_bk = {'state': 1, 'result': output_bk, 'path': os.path.join(dirpath, 'bk.conf')}
 							self.write_to_file(**data_bk)
-							data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, cmd + '.conf')}
+							data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, 'pz.conf')}
 							self.write_to_file(**data)
 				else:
 					# 拓展用于ftp/sftp/scp备份使用
