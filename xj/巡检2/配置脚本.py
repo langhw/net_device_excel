@@ -60,7 +60,7 @@ class XunJian(object):
 			wb = self.load_excel()
 			ws1 = wb[wb.sheetnames[0]]
 			# 通过参数min_row、max_col限制区域
-			for row in ws1.iter_rows(min_row=2, max_col=9):
+			for row in ws1.iter_rows(min_row=2, max_col=10):
 				if str(row[1].value).strip() == '#':
 					# 跳过注释行
 					continue
@@ -71,15 +71,15 @@ class XunJian(object):
 				             'password': row[6].value,
 				             'secret': row[7].value,
 				             'device_type': row[8].value,
-				             'cmd_list': self.get_cmd_info(wb[row[8].value.strip().lower()]),
+				             'cmd_list': self.get_cmd_info(wb[row[9].value.strip().lower()]),
 				             }
 				yield info_dict
 				# 方法2:pandas
-				# names = ['comment', 'ip', 'protocol', 'port', 'username', 'password', 'secret', 'device_type']
+				# names = ['comment', 'ip', 'protocol', 'port', 'username', 'password', 'secret', 'device_type', 'comm_sheet']
 				# df = pandas.read_excel(self.device_file, usecols='B:I', names=names, keep_default_na=False )
 				# data = df.to_dict(orient='records')
 				# for row in data:
-				# 	row['cmd_list'] = self.get_cmd_info(row['device_type'])
+				# 	row['cmd_list'] = self.get_cmd_info(row['comm_sheet'])
 				# 	yield  row
 		except Exception as e:
 			print('Error:', e)
@@ -150,6 +150,7 @@ class XunJian(object):
 			hostname = conn.find_prompt().strip('<').strip('>')
 			dirname = host['ip'] + '_' + hostname
 			dirpath = os.path.join(self.log, self.logtime, dirname)
+			# dirpath = os.path.join(self.log, self.logtime)
 			# 逐级创建目录
 			try:
 				os.makedirs(dirpath)
@@ -158,27 +159,26 @@ class XunJian(object):
 			try:
 				if cmds:
 					# 判断命令为真的条件
-					for cmd in cmds:
-						if enable:
-							# 进入特权模式
-							conn.enable()
-							# output += conn.send_command(cmd, strip_command=False, strip_prompt=False)
-							output_bk = conn.send_command('disp cu', strip_command=False, strip_prompt=False)
-							output = conn.send_config_set(config_commands=cmd, strip_command=False, strip_prompt=False)
-							# print(output)
-							data_bk = {'state': 1, 'result': output_bk, 'path': os.path.join(dirpath, 'bk.conf')}
-							self.write_to_file(**data_bk)
-							data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, 'pz.conf')}
-							self.write_to_file(**data)
-						else:
-							# output += conn.send_command(cmd, strip_command=False, strip_prompt=False)
-							output_bk = conn.send_command('disp cu', strip_command=False, strip_prompt=False)
-							output = conn.send_config_set(config_commands=cmd, strip_command=False, strip_prompt=False)
-							# print(output)
-							data_bk = {'state': 1, 'result': output_bk, 'path': os.path.join(dirpath, 'bk.conf')}
-							self.write_to_file(**data_bk)
-							data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, 'pz.conf')}
-							self.write_to_file(**data)
+					# for cmd in cmds:
+					if enable:
+						# 进入特权模式
+						conn.enable()
+						# output += conn.send_command(cmd, strip_command=False, strip_prompt=False)
+						output_bk = conn.send_command('show running', strip_command=False, strip_prompt=False)
+						output = conn.send_config_set(config_commands=cmds, strip_command=False, strip_prompt=False)
+						data_bk = {'state': 1, 'result': output_bk, 'path': os.path.join(dirpath, dirname + '_bk.conf')}
+						self.write_to_file(**data_bk)
+						data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, dirname + '_pz.conf')}
+						self.write_to_file(**data)
+					else:
+						# output += conn.send_command(cmd, strip_command=False, strip_prompt=False)
+						conn.send_command('screen-length disable')
+						output_bk = conn.send_command('display current-configuration', strip_command=False, strip_prompt=False)
+						output = conn.send_config_set(config_commands=cmds, strip_command=False, strip_prompt=False)
+						data_bk = {'state': 1, 'result': output_bk, 'path': os.path.join(dirpath, dirname + '_bk.conf')}
+						self.write_to_file(**data_bk)
+						data = {'state': 1, 'result': output, 'path': os.path.join(dirpath, dirname + '_pz.conf')}
+						self.write_to_file(**data)
 				else:
 					# 拓展用于ftp/sftp/scp备份使用
 					pass
