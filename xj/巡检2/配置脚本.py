@@ -186,6 +186,7 @@ class XunJian(object):
 				print(f'run_cmd Failed: {e}')
 			finally:
 				# 最后关闭会话
+				conn.save_config()
 				conn.disconnect()
 	def run_t(self, host):
 		"""仅执行命令"""
