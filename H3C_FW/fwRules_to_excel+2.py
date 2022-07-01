@@ -12,14 +12,12 @@ import chardet
 import os
 from pandas import DataFrame as df
 from styleframe import StyleFrame, Styler
-from multiprocessing.pool import ThreadPool
 from datetime import datetime
 class FwRule_to_Excle(object):
 	def __init__(self):
 		"""初始参数"""
 		self.column = ['ID', 'Source-Zone', 'Destination-Zone', 'S_ip_name', 'S_ip', 'D_ip_name', 'D_ip', 'Service_name', 'Protocol', 'Port', 'Description', 'Action']
 		self.dir = r'C:\Users\lianghw\Desktop\LOG'
-		self.pool = ThreadPool(10)
 		self.log ='JG'
 		if not os.path.exists(self.log): os.mkdir(self.log)
 		self.logtime = datetime.now().strftime('%Y-%m-%d_%H')
