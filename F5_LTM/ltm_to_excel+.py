@@ -36,11 +36,9 @@ class BIGIP_TO_EXCEL(object):
 		if not os.path.exists(self.log): os.mkdir(self.log)
 		self.logtime = datetime.now().strftime('%Y-%m-%d_%H')
 		self.dirpath = os.path.join(self.log, self.logtime + '_BIGIIP.xlsx')
-
 	def get_dir(self):
 		for log_file in os.listdir(self.dir):
 			yield log_file
-
 	def get_info(self):
 		"""读取配置文件，并将文件格式化到列表中"""
 		for file_n in self.get_dir():
@@ -54,9 +52,9 @@ class BIGIP_TO_EXCEL(object):
 					else:
 						break
 				file_list = file.read().split('\n')
+				# print(file_list)
 				file_name = file_n.split('.')[0]
 			yield file_name, file_list
-
 	def pp_data(self):
 		for file in self.get_info():
 			wkey = (
@@ -254,14 +252,82 @@ class BIGIP_TO_EXCEL(object):
 						ltm_virtual[ltm_virtual_name[0]].append('none')
 					else:
 						ltm_virtual[ltm_virtual_name[0]].append(ltm_virtual_clientside[0])
-			yield file[0], ltm_virtual
 
+			# 信息汇总：
+			for vs in ltm_virtual.keys():
+				ltm['F5区域名称'].append(ltm_virtual[vs][4])
+				ltm['VS名称'].append(vs.split('/')[-1])
+				ltm['VS服务地址'].append(ltm_virtual[vs][1])
+				ltm['VS服务端口*'].append(ltm_virtual[vs][2])
+				ltm['POOL名称'].append(ltm_virtual[vs][6].split('/')[-1])
+				ltm['会话保持时间*'].append(ltm_virtual[vs][5])
+				ltm['SNAT名称'].append(ltm_virtual[vs][7].split('/')[-1])
+				ltm['vs启用'].append(ltm_virtual[vs][3])
+				ltm['vs状态'].append(ltm_virtual[vs][0])
+				ltm['Vs_index'].append(ltm_virtual[vs][8])
+				ltm['创建时间'].append(ltm_virtual[vs][9])
+				ltm['修改时间'].append(ltm_virtual[vs][10])
+				ltm['http头插入源'].append(ltm_virtual[vs][11])
+				ltm['至节点添加ssl证书'].append(ltm_virtual[vs][12])
+				ltm['对外添加ssl证书'].append(ltm_virtual[vs][13])
+				if ltm_virtual[vs][6] == 'none':
+					ltm['member地址(需负载的服务器)'].append('none')
+					ltm['Pool_member地址状态'].append('none')
+					ltm['member端口'].append('none')
+					ltm['负载均衡算法*'].append('none')
+					ltm['健康检查名称'].append('none')
+					ltm['探测类型*'].append('none')
+					ltm['检查条件*'].append('none')
+					ltm['成功返回值*'].append('none')
+					ltm['探测包发送间隔*'].append('none')
+					ltm['最大响应时间*'].append('none')
+				else:
+					ltm['member地址(需负载的服务器)'].append(ltm_pool[ltm_virtual[vs][6]][1])
+					ltm['Pool_member地址状态'].append(ltm_pool[ltm_virtual[vs][6]][3])
+					ltm['member端口'].append(ltm_pool[ltm_virtual[vs][6]][2])
+					ltm['负载均衡算法*'].append(ltm_pool[ltm_virtual[vs][6]][0])
+					if ltm_pool[ltm_virtual[vs][6]][4] == 'none':
+						ltm['健康检查名称'].append(ltm_pool[ltm_virtual[vs][6]][4])
+						ltm['探测类型*'].append('none')
+						ltm['检查条件*'].append('none')
+						ltm['成功返回值*'].append('none')
+						ltm['探测包发送间隔*'].append('none')
+						ltm['最大响应时间*'].append('none')
+					elif 'and' in ltm_pool[ltm_virtual[vs][6]][4]:
+						duo_monitor = ltm_pool[ltm_virtual[vs][6]][4].split(' and ')
+						mon_n = mon_d = mon_j = mon_r = mon_s = mon_t = ''
+						for d_monitor in duo_monitor:
+							mon_n = mon_n + chr(10) + d_monitor.split('/')[-1]
+							mon_d = mon_d + chr(10) + ltm_monitor[d_monitor][0]
+							mon_j = mon_j + chr(10) + ltm_monitor[d_monitor][4]
+							mon_r = mon_r + chr(10) + ltm_monitor[d_monitor][3]
+							mon_s = mon_s + chr(10) + ltm_monitor[d_monitor][1]
+							mon_t = mon_t + chr(10) + ltm_monitor[d_monitor][5]
+						ltm['健康检查名称'].append(mon_n)
+						ltm['探测类型*'].append(mon_d)
+						ltm['检查条件*'].append(mon_j)
+						ltm['成功返回值*'].append(mon_r)
+						ltm['探测包发送间隔*'].append(mon_s)
+						ltm['最大响应时间*'].append(mon_t)
+					else:
+						ltm['健康检查名称'].append(ltm_pool[ltm_virtual[vs][6]][4].split('/')[-1])
+						ltm['探测类型*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][0])
+						ltm['检查条件*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][4])
+						ltm['成功返回值*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][3])
+						ltm['探测包发送间隔*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][1])
+						ltm['最大响应时间*'].append(ltm_monitor[ltm_pool[ltm_virtual[vs][6]][4]][5])
+				#
+				if ltm_virtual[vs][7] == 'none':
+					ltm['SNAT地址分配'].append('none')
+				else:
+					ltm['SNAT地址分配'].append(ltm_snatpool[ltm_virtual[vs][7]][0])
+			yield file[0], ltm
 	def write_excel(self):
 		"""主程序，将信息写入表格保持"""
 		start_time = datetime.now()
 		writer = StyleFrame.ExcelWriter(self.dirpath)
 		for pp in self.pp_data():
-			data = df.from_dict(pp, orient='index').T
+			data = df.from_dict(pp[1], orient='index').T
 			data.reset_index(inplace=True)
 			data.rename(columns={'index': '序号'}, inplace=True)
 			data.index = data.index + 1
@@ -281,7 +347,5 @@ class BIGIP_TO_EXCEL(object):
 		end_time = datetime.now()
 		print('-' * 50)
 		print('>>>>所有已经执行完成，总共耗时{:0.2f}秒.<<<'.format((end_time - start_time).total_seconds()))
-
-
 if __name__ == '__main__':
 	BIGIP_TO_EXCEL().write_excel()
