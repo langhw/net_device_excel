@@ -16,7 +16,7 @@ from datetime import datetime
 class FwRule_to_Excle(object):
 	def __init__(self):
 		"""初始参数"""
-		self.column = ['ID', 'Source-Zone', 'Destination-Zone', 'S_ip_name', 'S_ip', 'D_ip_name', 'D_ip', 'Service_name', 'Protocol', 'Port', 'Description', 'Action']
+		self.column = ['ID', 'Source-Zone', 'Destination-Zone', 'S_ip_name', 'S_ip', 'D_ip_name', 'D_ip', 'Service_name', 'Protocol', 'Port', 'Description', 'Action', 'status']
 		self.dir = r'C:\Users\lianghw\Desktop\LOG'
 		self.log ='JG'
 		if not os.path.exists(self.log): os.mkdir(self.log)
@@ -52,6 +52,7 @@ class FwRule_to_Excle(object):
 		# 定义匹配安全策略
 		pd_rule_name = re.compile(r'(\d+) name (.*)')
 		pd_rule_desc = re.compile(r'  description (.*)')
+		pd_rule_status = re.compile(r'  (disable)')
 		pd_rule_action = re.compile(r'  action (\w+)')
 		pd_rule_sz = re.compile(r'  source-zone (\w+)')
 		pd_rule_dz = re.compile(r'  destination-zone (\w+)')
@@ -102,6 +103,7 @@ class FwRule_to_Excle(object):
 						rule_id = pd_rule_name.findall(rule)[0][0]
 						rule_name = pd_rule_name.findall(rule)[0][1]
 						rule_desc = pd_rule_desc.findall(rule)
+						rule_status = pd_rule_status.findall(rule)
 						rule_action = pd_rule_action.findall(rule)
 						rule_sz = pd_rule_sz.findall(rule)
 						rule_dz = pd_rule_dz.findall(rule)
@@ -113,6 +115,10 @@ class FwRule_to_Excle(object):
 							rule_desc = rule_desc[0]
 						else:
 							rule_desc = ''
+						if len(rule_status) != 0:
+							rule_status = rule_status[0]
+						else:
+							rule_status = 'Enable'
 						if len(rule_action) != 0:
 							rule_action = rule_action[0]
 						else:
@@ -179,6 +185,7 @@ class FwRule_to_Excle(object):
 						rule_t[rule_name].append(rule_s_m[2])
 						rule_t[rule_name].append(rule_desc)
 						rule_t[rule_name].append(rule_action)
+						rule_t[rule_name].append(rule_status)
 			yield file_name, rule_t
 	def write_excel(self):
 		"""主程序，将信息写入表格保持"""
