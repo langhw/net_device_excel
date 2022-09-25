@@ -78,7 +78,7 @@ def get_conf(dev_info):
 		hostname = format_hostname(conn.find_prompt())
 		try:
 			for cmd in cmds:
-				output = output + conn.send_command(cmd, strip_prompt=False, strip_command=False, expect_string=r'More')
+				output = output + conn.send_command(cmd, strip_prompt=False, strip_command=False,)
 			success.append(dev_info['ip'])
 
 		except Exception as e:
