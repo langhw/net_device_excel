@@ -87,7 +87,7 @@ def get_conf(dev_info):
 			fail.append(dev_info['ip'])
 		finally:
 			# 退出netmiko session
-			conn.disconnet()
+			conn.disconnect()
 		return hostname, output
 
 def printPretty(msg):
