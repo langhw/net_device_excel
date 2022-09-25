@@ -11,13 +11,15 @@
 import os
 from datetime import datetime
 from multiprocessing.pool import ThreadPool
-
+import logging
+import re
+import textfsm
 import openpyxl
 import threading
 from netmiko import ConnectHandler as ch
 from netmiko.ssh_exception import (NetMikoTimeoutException, AuthenticationException, SSHException)
 from prettytable import PrettyTable
-
+# logging.basicConfig(level=logging.DEBUG)
 
 def device_info():
 	"""在表格中获取设备登录信息"""
