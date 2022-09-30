@@ -19,6 +19,7 @@ import re
 # import chardet
 import pandas as pd
 from pandas import DataFrame as df
+from openpyxl import styles
 # from styleframe import StyleFrame, Styler
 
 column = ['ID', 'Source-Zone', 'Destination-Zone', 'S_ip_name', 'S_ip', 'D_ip_name', 'D_ip',
@@ -320,6 +321,47 @@ def write_excel(pipei):
     # print('>>>>所有已经执行完成，总共耗时{:0.2f}秒.<<<'.format((end_time - start_time).total_seconds()))
     printSum(end_time - start_time)
 
+def meihua(xlsx):
+    font = styles.Font(name='微软雅黑', size=11, )
+
+    border = styles.Border(
+        left=styles.Side(border_style='thin', color='FF000000'),
+        right=styles.Side(border_style='thin', color='FF000000'),
+        top=styles.Side(border_style='thin', color='FF000000'),
+        bottom=styles.Side(border_style='thin', color='FF000000')
+    )
+
+    alignment = styles.Alignment(
+        horizontal='left',
+        vertical='center',
+        wrap_text=True,
+    )
+
+    wl = openpyxl.load_workbook(xlsx)
+    wb_list = wl.sheetnames
+    print(wb_list)
+    a = wl.active.max_row
+    b = wl.active.max_column
+    print(a, b)
+    for wb in wb_list:
+        wa = wl[wb]
+        print(wa.title)
+        wa.delete_cols(1)
+        mr = wa.max_row
+        mrf = 'A1:' + 'N' + str(mr)
+        wa.freeze_panes = 'C2'
+        wa.column_dimensions
+        for key in list(wa._cells.keys()):
+            wa._cells[key].alignment = alignment
+            wa._cells[key].font = font
+            wa._cells[key].border = border
+        wa.row_dimensions
+        wa.column_dimensions
+        wa.auto_filter.ref = mrf
+    wl.save(xlsx)
+    wl.close()
+
+
 def main():
     writer = pd.ExcelWriter(dirpath)
     for dev_info in device_info():
@@ -332,7 +374,7 @@ def main():
         data.to_excel(excel_writer=writer, sheet_name=pipei[0])
         writer.save()
     writer.close()
-
+    meihua(dirpath)
 if __name__ == "__main__":
     start_time = datetime.now()
     main()
